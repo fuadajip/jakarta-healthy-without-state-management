@@ -3,10 +3,26 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Button } from 'native-base';
 import { Actions as NavigationActions } from 'react-native-router-flux';
+const FBSDK = require('react-native-fbsdk');
+const {
+  LoginButton,
+  AccessToken,
+  AppEventsLogger,
+} = FBSDK;
+
+
 
 // create a component
 class MainScreen extends React.Component {
+  state = {
+    isLogin: false,
+  }
+
+  clickHandler = () => {
+    AppEventsLogger.logEvent('battledAnOrc');
+  }
   render () {
+    let { isLogin } = this.state;
     return (
       <View style={styles.container}>
         <View style={styles.boxIcon}>
@@ -18,9 +34,13 @@ class MainScreen extends React.Component {
           <View style={styles.lineBot} />
         </View>
 
-        <View style={styles.boxButton}>
+        { isLogin &&  
+          <View style={styles.boxButton}>
           <Button
-            onPress={() => NavigationActions.fetchlist({ paramKey: 'rsumum' })}
+            onPress={() => {
+              NavigationActions.fetchlist({ paramKey: 'rsumum' }),
+              AppEventsLogger.logEvent('btnRsUmum')
+            }}
             style={{
               backgroundColor: '#028090',
               margin: 15
@@ -29,7 +49,10 @@ class MainScreen extends React.Component {
           </Button>
 
           <Button 
-            onPress={() => NavigationActions.fetchlist({ paramKey: 'rskhusus' })}
+            onPress={() => {
+              NavigationActions.fetchlist({ paramKey: 'rskhusus' }),
+              AppEventsLogger.logEvent('btnRsKhusu')
+            }}
             style={{
               backgroundColor: '#02C39A',
               margin: 15
@@ -38,7 +61,10 @@ class MainScreen extends React.Component {
           </Button>
 
           <Button 
-            onPress={() => NavigationActions.fetchlist({ paramKey: 'puskesmas' })}
+            onPress={() => {
+              NavigationActions.fetchlist({ paramKey: 'puskesmas' }),
+              AppEventsLogger.logEvent('btnPuskesmas')
+            }}
             style={{
               backgroundColor: '#00A896',
               margin: 15
@@ -46,6 +72,41 @@ class MainScreen extends React.Component {
             <Text style={{color: '#fff'}}>Puskesmas</Text>
           </Button>
         </View>
+        }
+
+        <View>
+        <Button onPress = {()=> AppEventsLogger.logEvent('btnFbAnalytics')}
+        style={{
+          backgroundColor: '#028090',
+          margin: 15
+        }} full>>
+        <Text>btnFbAnalytics</Text>
+        </Button>
+        <LoginButton
+          publishPermissions={["publish_actions"]}
+          onLoginFinished={
+            (error, result) => {
+              if (error) {
+                alert("login has error: " + result.error);
+              } else if (result.isCancelled) {
+                alert("login is cancelled.");
+              } else {
+                AppEventsLogger.logEvent('userLoggedIn')
+                AccessToken.getCurrentAccessToken().then(
+                  (data) => {
+                    this.setState({
+                        isLogin: true
+                      });
+                    alert(data.accessToken.toString())
+                  }
+                )
+              }
+            }
+          }
+          onLogoutFinished={() => alert("logout.")}/>
+      </View>
+
+       
       </View>
     );
   }
